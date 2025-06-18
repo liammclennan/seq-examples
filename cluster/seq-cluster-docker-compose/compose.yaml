@@ -1,6 +1,6 @@
 services:
   seq1:
-    image: datalust/seq:preview
+    image: datalust/seq:latest
     hostname: seq1
     depends_on:
       pgseq:
@@ -21,6 +21,7 @@ services:
       - SEQ_DIAGNOSTICS_OTLP_ENDPOINT=http://seqdiagnostics/ingest/otlp
       - SEQ_DIAGNOSTICS_OTLP_PROTOCOL=http/protobuf
       - SEQ_DIAGNOSTICS_OTLP_METRICSSAMPLINGINTERVALSECONDS=5
+      - SEQ_FIRSTRUN_NOAUTHENTICATION=True
     healthcheck:
       test: "/seqsvr/Client/seqcli node health -s http://localhost"
       interval: 15s
@@ -29,7 +30,7 @@ services:
       start_period: 5s
 
   seq2:
-    image: datalust/seq:preview
+    image: datalust/seq:latest
     hostname: seq2
     depends_on:
       pgseq:
@@ -52,6 +53,7 @@ services:
       - SEQ_DIAGNOSTICS_OTLP_ENDPOINT=http://seqdiagnostics/ingest/otlp
       - SEQ_DIAGNOSTICS_OTLP_PROTOCOL=http/protobuf
       - SEQ_DIAGNOSTICS_OTLP_METRICSSAMPLINGINTERVALSECONDS=5
+      - SEQ_FIRSTRUN_NOAUTHENTICATION=True
     healthcheck:
       test: "/seqsvr/Client/seqcli node health -s http://localhost"
       interval: 15s
@@ -60,7 +62,7 @@ services:
       start_period: 5s
 
   seq3:
-    image: datalust/seq:preview
+    image: datalust/seq:latest
     hostname: seq3
     depends_on:
       pgseq:
@@ -83,6 +85,7 @@ services:
       - SEQ_DIAGNOSTICS_OTLP_ENDPOINT=http://seqdiagnostics/ingest/otlp
       - SEQ_DIAGNOSTICS_OTLP_PROTOCOL=http/protobuf
       - SEQ_DIAGNOSTICS_OTLP_METRICSSAMPLINGINTERVALSECONDS=5
+      - SEQ_FIRSTRUN_NOAUTHENTICATION=True
     healthcheck:
       test: "/seqsvr/Client/seqcli node health -s http://localhost"
       interval: 15s
@@ -91,7 +94,7 @@ services:
       start_period: 5s
 
   seqdiagnostics:
-    image: datalust/seq:preview
+    image: datalust/seq:latest
     hostname: seqdiagnostics
     networks:
       - seqclusterdemo
@@ -100,6 +103,7 @@ services:
     environment: 
       - ACCEPT_EULA=Y
       - SEQ_FEATURES_ENABLED=IngestOtlpMetrics
+      - SEQ_FIRSTRUN_NOAUTHENTICATION=True
     healthcheck:
       test: "/seqsvr/Client/seqcli node health -s http://localhost"
       interval: 15s

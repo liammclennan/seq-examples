@@ -10,5 +10,5 @@ A collection of examples demonstrating how to do things with Seq.
 A suitable temporary Seq server can be started with:
 
 ```shell
-> docker run -e ACCEPT_EULA=Y --rm -p 5341:80 datalust/seq
+> docker run -e ACCEPT_EULA=Y -e SEQ_FIRSTRUN_NOAUTHENTICATION=True --rm -p 5341:80 datalust/seq
 ```
