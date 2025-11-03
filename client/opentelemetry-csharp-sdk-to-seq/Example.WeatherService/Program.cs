@@ -1,6 +1,9 @@
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
+using OpenTelemetry;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Logs;
+using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 // ReSharper disable ExplicitCallerInfoArgument
@@ -42,6 +45,8 @@ builder.Services.AddLogging(logging => logging.AddOpenTelemetry(openTelemetryLog
     });
 }));
 
+using var meterProvider = Metrics.CreateMeterProvider(builder.Environment.ApplicationName);
+
 var app = builder.Build();
 app.Logger.LogInformation("Starting {App}", builder.Environment.ApplicationName);
 
@@ -52,6 +57,15 @@ app.MapGet("/{postcode}", (string postcode) =>
 {
     using var activity = exampleActivitySource.StartActivity("Look up forecast for postcode {Postcode}");
     activity?.SetTag("Postcode", postcode);
+
+    if (forecastByPostcode.ContainsKey(postcode))
+    {
+        Metrics.FoundPostcodes.Add(1);
+    }
+    else
+    {
+        Metrics.MissingPostcodes.Add(1);
+    }
     
     var forecast = forecastByPostcode[postcode];
     activity?.SetTag("Forecast", forecast);
