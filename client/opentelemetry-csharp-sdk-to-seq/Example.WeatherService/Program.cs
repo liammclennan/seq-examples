@@ -47,6 +47,12 @@ builder.Services.AddLogging(logging => logging.AddOpenTelemetry(openTelemetryLog
 
 using var meterProvider = Metrics.CreateMeterProvider(builder.Environment.ApplicationName);
 
+Random random = new Random();
+using var timer = new Timer((s) =>
+{
+    Metrics.RandomValue.Record(random.Next());
+}, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1)); 
+
 var app = builder.Build();
 app.Logger.LogInformation("Starting {App}", builder.Environment.ApplicationName);
 
