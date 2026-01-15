@@ -51,7 +51,24 @@ Random random = new Random();
 using var timer = new Timer((s) =>
 {
     Metrics.RandomValue.Record(random.Next());
+    
+    for (var i = 0; i < 1000; i++)
+    {
+        Metrics.FixedHistogram.Record(random.Next(1, 1000) / 50.0);
+    }
+    
 }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1)); 
+
+Metrics.ExponentialHistogram.Record(0);
+Metrics.ExponentialHistogram.Record(4);
+Metrics.ExponentialHistogram.Record(0);
+Metrics.ExponentialHistogram.Record(4);
+Metrics.ExponentialHistogram.Record(4);
+Metrics.ExponentialHistogram.Record(9);
+Metrics.ExponentialHistogram.Record(8);
+Metrics.ExponentialHistogram.Record(9);
+Metrics.ExponentialHistogram.Record(4);
+Metrics.ExponentialHistogram.Record(3);
 
 var app = builder.Build();
 app.Logger.LogInformation("Starting {App}", builder.Environment.ApplicationName);
