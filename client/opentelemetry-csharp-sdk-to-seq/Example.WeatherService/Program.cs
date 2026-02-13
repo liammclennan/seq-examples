@@ -52,23 +52,24 @@ using var timer = new Timer((s) =>
 {
     Metrics.RandomValue.Record(random.Next());
     
-    for (var i = 0; i < 1000; i++)
-    {
-        Metrics.FixedHistogram.Record(random.Next(1, 1000) / 50.0);
-    }
+    Metrics.FixedHistogram.Record(DateTime.Now.Minute);
     
+    Metrics.ExponentialHistogram.Record(0);
+    Metrics.ExponentialHistogram.Record(4);
+    Metrics.ExponentialHistogram.Record(0);
+    Metrics.ExponentialHistogram.Record(4);
+    Metrics.ExponentialHistogram.Record(4);
+    Metrics.ExponentialHistogram.Record(9);
+    Metrics.ExponentialHistogram.Record(8);
+    Metrics.ExponentialHistogram.Record(9);
+    Metrics.ExponentialHistogram.Record(4);
+    Metrics.ExponentialHistogram.Record(3);
+    
+    // Exponential distribution
+    var wait = -Math.Log(1.0 - random.NextDouble()) / 0.5;
+    Metrics.WaitTime.Record(wait);
+    Metrics.WaitTimeFixed.Record(wait);
 }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1)); 
-
-Metrics.ExponentialHistogram.Record(0);
-Metrics.ExponentialHistogram.Record(4);
-Metrics.ExponentialHistogram.Record(0);
-Metrics.ExponentialHistogram.Record(4);
-Metrics.ExponentialHistogram.Record(4);
-Metrics.ExponentialHistogram.Record(9);
-Metrics.ExponentialHistogram.Record(8);
-Metrics.ExponentialHistogram.Record(9);
-Metrics.ExponentialHistogram.Record(4);
-Metrics.ExponentialHistogram.Record(3);
 
 var app = builder.Build();
 app.Logger.LogInformation("Starting {App}", builder.Environment.ApplicationName);

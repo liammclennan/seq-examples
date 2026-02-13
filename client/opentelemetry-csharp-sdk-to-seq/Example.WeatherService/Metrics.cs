@@ -21,6 +21,18 @@ public static class Metrics
             unit: "na",
             description: "Exponential histogram");
 
+    public static readonly Histogram<double> WaitTime =
+        weatherServiceMetrics.CreateHistogram<double>(
+            name: "wait.time",
+            unit: "s",
+            description: "Exponential histogram");
+
+    public static readonly Histogram<double> WaitTimeFixed =
+        weatherServiceMetrics.CreateHistogram<double>(
+            name: "wait.time.fixed",
+            unit: "s",
+            description: "Fixed wait time");
+
     public static readonly Histogram<double> FixedHistogram =
         weatherServiceMetrics.CreateHistogram<double>(
             name: "fixed.histogram",
@@ -36,6 +48,10 @@ public static class Metrics
                 instrumentName: "exponential.histogram",
                 new Base2ExponentialBucketHistogramConfiguration()
             )
+            .AddView(
+                instrumentName: "wait.time",
+                new Base2ExponentialBucketHistogramConfiguration()
+            )
             .AddAspNetCoreInstrumentation()
             .AddMeter("Microsoft.AspNetCore.Hosting")
             .AddMeter("Microsoft.AspNetCore.Server.Kestrel")
@@ -48,6 +64,7 @@ public static class Metrics
                 exporterOptions.Endpoint = new Uri("http://localhost:5341/ingest/otlp/v1/metrics");
                 exporterOptions.Protocol = OtlpExportProtocol.HttpProtobuf;
                 metricReaderOptions.PeriodicExportingMetricReaderOptions.ExportIntervalMilliseconds = 1000;
+                metricReaderOptions.TemporalityPreference = MetricReaderTemporalityPreference.Delta;
             })
             .Build();
     }
