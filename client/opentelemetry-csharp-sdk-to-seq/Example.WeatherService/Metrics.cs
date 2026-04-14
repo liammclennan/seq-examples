@@ -7,6 +7,8 @@ using OpenTelemetry.Resources;
 public static class Metrics
 {
     public static Meter weatherServiceMetrics = new("Example.WeatherService", "1.0");
+    public static Counter<long> Seconds = weatherServiceMetrics.CreateCounter<long>(
+        "Seconds", "s", "Counts the number of seconds elapsed.");
     public static Counter<long> FoundPostcodes = weatherServiceMetrics.CreateCounter<long>(
         "FoundPostcodes", "ones", "Counts the number of successfully found postcodes.");
     public static Counter<long> MissingPostcodes = weatherServiceMetrics.CreateCounter<long>(
