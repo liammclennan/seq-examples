@@ -50,7 +50,13 @@ using var meterProvider = Metrics.CreateMeterProvider(builder.Environment.Applic
 Random random = new Random();
 using var timer = new Timer((s) =>
 {
-    Metrics.RandomValue.Record(random.Next());
+    Metrics.RandomValue.Record(random.Next(), [
+        new KeyValuePair<string, object?>("A.C", "Ccceeee"),
+        new KeyValuePair<string, object?>("A.D", "DDDDDeeeee"),
+        new KeyValuePair<string, object?>("A.D.E", "Eeeeeyyy"),
+        new KeyValuePair<string, object?>("B.F", "Eeeeefffff"),
+        new KeyValuePair<string, object?>("A", 1), new KeyValuePair<string, object?>("B", 2)
+    ]);
     
     Metrics.FixedHistogram.Record(DateTime.Now.Minute);
     
