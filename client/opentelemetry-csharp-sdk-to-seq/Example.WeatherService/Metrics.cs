@@ -63,7 +63,7 @@ public static class Metrics
             {
                 exporterOptions.Endpoint = new Uri("http://localhost:5341/ingest/otlp/v1/metrics");
                 exporterOptions.Protocol = OtlpExportProtocol.HttpProtobuf;
-                metricReaderOptions.PeriodicExportingMetricReaderOptions.ExportIntervalMilliseconds = 1000;
+                metricReaderOptions.PeriodicExportingMetricReaderOptions.ExportIntervalMilliseconds = 10000;
                 metricReaderOptions.TemporalityPreference = MetricReaderTemporalityPreference.Delta;
             })
             .Build();

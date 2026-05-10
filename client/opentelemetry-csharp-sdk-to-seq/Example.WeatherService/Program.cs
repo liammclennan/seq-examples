@@ -52,7 +52,7 @@ using var timer = new Timer((s) =>
 {
     Metrics.RandomValue.Record(random.Next());
     
-    Metrics.FixedHistogram.Record(DateTime.Now.Minute);
+    Metrics.FixedHistogram.Record(DateTime.Now.Minute + DateTime.Now.Second + DateTime.Now.Millisecond);
     
     Metrics.ExponentialHistogram.Record(0);
     Metrics.ExponentialHistogram.Record(4);
@@ -69,7 +69,7 @@ using var timer = new Timer((s) =>
     var wait = -Math.Log(1.0 - random.NextDouble()) / 0.5;
     Metrics.WaitTime.Record(wait);
     Metrics.WaitTimeFixed.Record(wait);
-}, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1)); 
+}, null, TimeSpan.FromSeconds(1), TimeSpan.FromMilliseconds(10)); 
 
 var app = builder.Build();
 app.Logger.LogInformation("Starting {App}", builder.Environment.ApplicationName);
