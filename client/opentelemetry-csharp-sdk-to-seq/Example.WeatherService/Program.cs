@@ -69,7 +69,7 @@ using var timer = new Timer((s) =>
     var wait = -Math.Log(1.0 - random.NextDouble()) / 0.5;
     Metrics.WaitTime.Record(wait);
     Metrics.WaitTimeFixed.Record(wait);
-}, null, TimeSpan.FromSeconds(1), TimeSpan.FromMilliseconds(10)); 
+}, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1)); 
 
 var app = builder.Build();
 app.Logger.LogInformation("Starting {App}", builder.Environment.ApplicationName);
@@ -98,3 +98,14 @@ app.MapGet("/{postcode}", (string postcode) =>
 });
 
 app.Run();
+
+static string GetRandomStarSign()
+{
+    string[] starSigns = {
+        "Aries", "Taurus", "Gemini", "Cancer",
+        "Leo", "Virgo", "Libra", "Scorpio",
+        "Sagittarius", "Capricorn", "Aquarius", "Pisces"
+    };
+
+    return starSigns[Random.Shared.Next(starSigns.Length)];
+}
