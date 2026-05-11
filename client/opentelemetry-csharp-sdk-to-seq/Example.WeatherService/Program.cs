@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using MathNet.Numerics.Distributions;
 using OpenTelemetry;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Logs;
@@ -47,18 +48,16 @@ builder.Services.AddLogging(logging => logging.AddOpenTelemetry(openTelemetryLog
 
 using var meterProvider = Metrics.CreateMeterProvider(builder.Environment.ApplicationName);
 
+var logNormal = new LogNormal(0, 1.0);
+var exponential = new Exponential(2.0);
+var cauchy = new Cauchy(10.0, 1.0);
+
 Random random = new Random();
 using var timer = new Timer((s) =>
 {
-    Metrics.RandomValue.Record(random.Next(), [
-        new KeyValuePair<string, object?>("A.C", "Ccceeee"),
-        new KeyValuePair<string, object?>("A.D", "DDDDDeeeee"),
-        new KeyValuePair<string, object?>("A.D.E", "Eeeeeyyy"),
-        new KeyValuePair<string, object?>("B.F", "Eeeeefffff"),
-        new KeyValuePair<string, object?>("A", 1), new KeyValuePair<string, object?>("B", 2)
-    ]);
+    Metrics.RandomValue.Record(random.Next());
     
-    Metrics.FixedHistogram.Record(DateTime.Now.Minute);
+    Metrics.FixedHistogram.Record(DateTime.Now.Minute + DateTime.Now.Second + DateTime.Now.Millisecond);
     
     Metrics.ExponentialHistogram.Record(0);
     Metrics.ExponentialHistogram.Record(4);
@@ -76,8 +75,18 @@ using var timer = new Timer((s) =>
     Metrics.WaitTime.Record(wait);
     Metrics.WaitTimeFixed.Record(wait);
     
-    Metrics.Seconds.Add(1, new KeyValuePair<string, object?>("starsign", GetRandomStarSign()));
-}, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1)); 
+    
+    Metrics.DistributionLogNormal.Record(logNormal.Sample());
+    Metrics.DistributionExponential.Record(exponential.Sample());
+    Metrics.DistributionCauchy.Record(cauchy.Sample());
+    
+    var offset = DateTime.Now.Minute % 2;
+    Metrics.Evens.Record(2 + offset);
+    Metrics.Evens.Record(4 + offset);
+    Metrics.Evens.Record(6 + offset);
+    Metrics.Evens.Record(8 + offset);
+    
+}, null, TimeSpan.FromSeconds(1), TimeSpan.FromMilliseconds(1)); 
 
 using var timer2 = new Timer((s) =>
 {

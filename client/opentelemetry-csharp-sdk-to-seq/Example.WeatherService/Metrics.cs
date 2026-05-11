@@ -43,10 +43,37 @@ public static class Metrics
 
     public static List<Histogram<double>> BulkHistograms = [];
 
+    
+    public static readonly Histogram<double> DistributionLogNormal =
+        weatherServiceMetrics.CreateHistogram<double>(
+            name: "distribution.lognormal",
+            unit: "na",
+            description: "Log normal distribution");
+
+    public static readonly Histogram<double> DistributionExponential =
+        weatherServiceMetrics.CreateHistogram<double>(
+            name: "distribution.exponential",
+            unit: "na",
+            description: "Exponential distribution");
+
+    public static readonly Histogram<double> Evens =
+        weatherServiceMetrics.CreateHistogram<double>(
+            name: "evens",
+            unit: "na",
+            description: "Odd even distribution");
+
+    public static readonly Histogram<double> DistributionCauchy =
+        weatherServiceMetrics.CreateHistogram<double>(
+            name: "distribution.cauchy",
+            unit: "na",
+            description: "Cauchy distribution");
+    
+    
+    
 
     public static MeterProvider CreateMeterProvider(string serviceName)
     {
-        for (var i = 0; i < 1000; i++)
+        for (var i = 0; i < 10; i++)
         {
             BulkHistograms.Add(weatherServiceMetrics.CreateHistogram<double>(
                 name: "bulk.histogram." + i.ToString(),
@@ -65,6 +92,22 @@ public static class Metrics
                 instrumentName: "wait.time",
                 new Base2ExponentialBucketHistogramConfiguration()
             )
+            .AddView(
+                instrumentName: "distribution.lognormal",
+                new Base2ExponentialBucketHistogramConfiguration()
+            )
+            .AddView(
+                instrumentName: "distribution.exponential",
+                new Base2ExponentialBucketHistogramConfiguration()
+            )
+            .AddView(
+                instrumentName: "evens",
+                new Base2ExponentialBucketHistogramConfiguration()
+            )
+            .AddView(
+                instrumentName: "distribution.cauchy",
+                new Base2ExponentialBucketHistogramConfiguration()
+            )
             .AddAspNetCoreInstrumentation()
             .AddMeter("Microsoft.AspNetCore.Hosting")
             .AddMeter("Microsoft.AspNetCore.Server.Kestrel")
@@ -76,7 +119,7 @@ public static class Metrics
             {
                 exporterOptions.Endpoint = new Uri("http://localhost:5341/ingest/otlp/v1/metrics");
                 exporterOptions.Protocol = OtlpExportProtocol.HttpProtobuf;
-                metricReaderOptions.PeriodicExportingMetricReaderOptions.ExportIntervalMilliseconds = 1;
+                metricReaderOptions.PeriodicExportingMetricReaderOptions.ExportIntervalMilliseconds = 10000;
                 metricReaderOptions.TemporalityPreference = MetricReaderTemporalityPreference.Delta;
             })
             .Build();
