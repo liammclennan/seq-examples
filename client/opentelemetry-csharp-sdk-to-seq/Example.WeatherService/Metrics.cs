@@ -41,9 +41,20 @@ public static class Metrics
             unit: "na",
             description: "Fixed histogram");
 
+    public static List<Histogram<double>> BulkHistograms = [];
+
 
     public static MeterProvider CreateMeterProvider(string serviceName)
     {
+        for (var i = 0; i < 1000; i++)
+        {
+            BulkHistograms.Add(weatherServiceMetrics.CreateHistogram<double>(
+                name: "bulk.histogram." + i.ToString(),
+                unit: "na",
+                description: "Fixed histogram"));
+        }
+        
+        
         return Sdk.CreateMeterProviderBuilder()
             .AddMeter("Example.WeatherService")
             .AddView(
@@ -65,7 +76,7 @@ public static class Metrics
             {
                 exporterOptions.Endpoint = new Uri("http://localhost:5341/ingest/otlp/v1/metrics");
                 exporterOptions.Protocol = OtlpExportProtocol.HttpProtobuf;
-                metricReaderOptions.PeriodicExportingMetricReaderOptions.ExportIntervalMilliseconds = 1000;
+                metricReaderOptions.PeriodicExportingMetricReaderOptions.ExportIntervalMilliseconds = 1;
                 metricReaderOptions.TemporalityPreference = MetricReaderTemporalityPreference.Delta;
             })
             .Build();

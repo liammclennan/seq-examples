@@ -79,6 +79,11 @@ using var timer = new Timer((s) =>
     Metrics.Seconds.Add(1, new KeyValuePair<string, object?>("starsign", GetRandomStarSign()));
 }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1)); 
 
+using var timer2 = new Timer((s) =>
+{
+    Metrics.BulkHistograms.ForEach(bh => bh.Record(Random.Shared.NextDouble() * 10000));
+}, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(1));
+
 var app = builder.Build();
 app.Logger.LogInformation("Starting {App}", builder.Environment.ApplicationName);
 
