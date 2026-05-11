@@ -41,6 +41,33 @@ public static class Metrics
             unit: "na",
             description: "Fixed histogram");
 
+    
+    public static readonly Histogram<double> DistributionLogNormal =
+        weatherServiceMetrics.CreateHistogram<double>(
+            name: "distribution.lognormal",
+            unit: "na",
+            description: "Log normal distribution");
+
+    public static readonly Histogram<double> DistributionExponential =
+        weatherServiceMetrics.CreateHistogram<double>(
+            name: "distribution.exponential",
+            unit: "na",
+            description: "Exponential distribution");
+
+    public static readonly Histogram<double> Evens =
+        weatherServiceMetrics.CreateHistogram<double>(
+            name: "evens",
+            unit: "na",
+            description: "Odd even distribution");
+
+    public static readonly Histogram<double> DistributionCauchy =
+        weatherServiceMetrics.CreateHistogram<double>(
+            name: "distribution.cauchy",
+            unit: "na",
+            description: "Cauchy distribution");
+    
+    
+    
 
     public static MeterProvider CreateMeterProvider(string serviceName)
     {
@@ -52,6 +79,22 @@ public static class Metrics
             )
             .AddView(
                 instrumentName: "wait.time",
+                new Base2ExponentialBucketHistogramConfiguration()
+            )
+            .AddView(
+                instrumentName: "distribution.lognormal",
+                new Base2ExponentialBucketHistogramConfiguration()
+            )
+            .AddView(
+                instrumentName: "distribution.exponential",
+                new Base2ExponentialBucketHistogramConfiguration()
+            )
+            .AddView(
+                instrumentName: "evens",
+                new Base2ExponentialBucketHistogramConfiguration()
+            )
+            .AddView(
+                instrumentName: "distribution.cauchy",
                 new Base2ExponentialBucketHistogramConfiguration()
             )
             .AddAspNetCoreInstrumentation()

@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using MathNet.Numerics.Distributions;
 using OpenTelemetry;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Logs;
@@ -47,6 +48,10 @@ builder.Services.AddLogging(logging => logging.AddOpenTelemetry(openTelemetryLog
 
 using var meterProvider = Metrics.CreateMeterProvider(builder.Environment.ApplicationName);
 
+var logNormal = new LogNormal(0, 1.0);
+var exponential = new Exponential(2.0);
+var cauchy = new Cauchy(10.0, 1.0);
+
 Random random = new Random();
 using var timer = new Timer((s) =>
 {
@@ -69,7 +74,19 @@ using var timer = new Timer((s) =>
     var wait = -Math.Log(1.0 - random.NextDouble()) / 0.5;
     Metrics.WaitTime.Record(wait);
     Metrics.WaitTimeFixed.Record(wait);
-}, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1)); 
+    
+    
+    Metrics.DistributionLogNormal.Record(logNormal.Sample());
+    Metrics.DistributionExponential.Record(exponential.Sample());
+    Metrics.DistributionCauchy.Record(cauchy.Sample());
+    
+    var offset = DateTime.Now.Minute % 2;
+    Metrics.Evens.Record(2 + offset);
+    Metrics.Evens.Record(4 + offset);
+    Metrics.Evens.Record(6 + offset);
+    Metrics.Evens.Record(8 + offset);
+    
+}, null, TimeSpan.FromSeconds(1), TimeSpan.FromMilliseconds(1)); 
 
 var app = builder.Build();
 app.Logger.LogInformation("Starting {App}", builder.Environment.ApplicationName);
