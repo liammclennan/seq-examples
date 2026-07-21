@@ -1,6 +1,6 @@
 services:
   seq1:
-    image: datalust/seq:latest
+    image: datalust/seq-linux-ci:bench-x64
     hostname: seq1
     depends_on:
       pgseq:
@@ -30,7 +30,7 @@ services:
       start_period: 5s
 
   seq2:
-    image: datalust/seq:latest
+    image: datalust/seq-linux-ci:bench-x64
     hostname: seq2
     depends_on:
       pgseq:
@@ -62,7 +62,7 @@ services:
       start_period: 5s
 
   seq3:
-    image: datalust/seq:latest
+    image: datalust/seq-linux-ci:bench-x64
     hostname: seq3
     depends_on:
       pgseq:
@@ -94,7 +94,7 @@ services:
       start_period: 5s
 
   seqdiagnostics:
-    image: datalust/seq:latest
+    image: datalust/seq-linux-ci:bench-x64
     hostname: seqdiagnostics
     networks:
       - seqclusterdemo
@@ -102,7 +102,6 @@ services:
       - "5777:80"
     environment: 
       - ACCEPT_EULA=Y
-      - SEQ_FEATURES_ENABLED=IngestOtlpMetrics
       - SEQ_FIRSTRUN_NOAUTHENTICATION=True
     healthcheck:
       test: "/seqsvr/Client/seqcli node health -s http://localhost"
