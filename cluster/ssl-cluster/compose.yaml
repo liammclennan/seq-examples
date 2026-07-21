@@ -1,0 +1,248 @@
+services:
+  seq1:
+    image: datalust/seq-linux-ci:bench-x64
+    hostname: seq1
+    depends_on:
+      pgseq:
+        condition: service_healthy
+    networks:
+      - seqclusterdemo
+    volumes:
+      - ./seq1data:/data
+    environment: 
+      - ACCEPT_EULA=Y
+      - "SEQ_METASTORE_POSTGRES_CONNECTIONSTRING=Server=pgseq;Port=5432;Database=seq;User Id=postgres;Password=terminatorx;"
+      - SEQ_API_CANONICALURI=http://localhost:5666
+      - SEQ_CLUSTER_NODENAME=alpha
+      - SEQ_CLUSTER_ISENABLED=true
+      - SEQ_CLUSTER_CLUSTERLISTENURI=ws://seq1:1082
+      - SEQ_CLUSTER_INTERNALAPIURI=http://seq1
+      - 'SEQ_STORAGE_SECRETKEY=lON57A+lulu9J1RKf8ft03FtOpepXJldYtsGLybHHP4='
+      - SEQ_DIAGNOSTICS_OTLP_ENDPOINT=http://seqdiagnostics/ingest/otlp
+      - SEQ_DIAGNOSTICS_OTLP_PROTOCOL=http/protobuf
+      - SEQ_DIAGNOSTICS_OTLP_METRICSSAMPLINGINTERVALSECONDS=5
+      - SEQ_FIRSTRUN_NOAUTHENTICATION=True
+    healthcheck:
+      test: "/seqsvr/Client/seqcli node health -s http://localhost"
+      interval: 15s
+      timeout: 10s
+      retries: 2
+      start_period: 5s
+
+  seq2:
+    image: datalust/seq-linux-ci:bench-x64
+    hostname: seq2
+    depends_on:
+      pgseq:
+        condition: service_healthy
+      seq1:
+        condition: service_healthy
+    networks:
+      - seqclusterdemo
+    volumes:
+      - ./seq2data:/data
+    environment: 
+      - ACCEPT_EULA=Y
+      - 'SEQ_METASTORE_POSTGRES_CONNECTIONSTRING=Server=pgseq;Port=5432;Database=seq;Username=postgres;Password=terminatorx;'
+      - SEQ_API_CANONICALURI=http://localhost:5666
+      - SEQ_CLUSTER_NODENAME=beta
+      - SEQ_CLUSTER_ISENABLED=true
+      - SEQ_CLUSTER_CLUSTERLISTENURI=ws://seq2:1081
+      - SEQ_CLUSTER_INTERNALAPIURI=http://seq2
+      - 'SEQ_STORAGE_SECRETKEY=lON57A+lulu9J1RKf8ft03FtOpepXJldYtsGLybHHP4='
+      - SEQ_DIAGNOSTICS_OTLP_ENDPOINT=http://seqdiagnostics/ingest/otlp
+      - SEQ_DIAGNOSTICS_OTLP_PROTOCOL=http/protobuf
+      - SEQ_DIAGNOSTICS_OTLP_METRICSSAMPLINGINTERVALSECONDS=5
+      - SEQ_FIRSTRUN_NOAUTHENTICATION=True
+    healthcheck:
+      test: "/seqsvr/Client/seqcli node health -s http://localhost"
+      interval: 15s
+      timeout: 10s
+      retries: 2
+      start_period: 5s
+
+  seq3:
+    image: datalust/seq-linux-ci:bench-x64
+    hostname: seq3
+    depends_on:
+      pgseq:
+        condition: service_healthy
+      seq1:
+        condition: service_healthy
+    networks:
+      - seqclusterdemo
+    volumes:
+      - ./seq3data:/data
+    environment: 
+      - ACCEPT_EULA=Y
+      - 'SEQ_METASTORE_POSTGRES_CONNECTIONSTRING=Server=pgseq;Port=5432;Database=seq;Username=postgres;Password=terminatorx;'
+      - SEQ_API_CANONICALURI=http://localhost:5666
+      - SEQ_CLUSTER_NODENAME=gamma
+      - SEQ_CLUSTER_ISENABLED=true
+      - SEQ_CLUSTER_CLUSTERLISTENURI=ws://seq3:1081
+      - SEQ_CLUSTER_INTERNALAPIURI=http://seq3
+      - 'SEQ_STORAGE_SECRETKEY=lON57A+lulu9J1RKf8ft03FtOpepXJldYtsGLybHHP4='
+      - SEQ_DIAGNOSTICS_OTLP_ENDPOINT=http://seqdiagnostics/ingest/otlp
+      - SEQ_DIAGNOSTICS_OTLP_PROTOCOL=http/protobuf
+      - SEQ_DIAGNOSTICS_OTLP_METRICSSAMPLINGINTERVALSECONDS=5
+      - SEQ_FIRSTRUN_NOAUTHENTICATION=True
+    healthcheck:
+      test: "/seqsvr/Client/seqcli node health -s http://localhost"
+      interval: 15s
+      timeout: 10s
+      retries: 2
+      start_period: 5s
+
+  seqdiagnostics:
+    image: datalust/seq-linux-ci:bench-x64
+    hostname: seqdiagnostics
+    networks:
+      - seqclusterdemo
+    ports:
+      - "5777:80"
+    environment: 
+      - ACCEPT_EULA=Y
+      - SEQ_FIRSTRUN_NOAUTHENTICATION=True
+    healthcheck:
+      test: "/seqsvr/Client/seqcli node health -s http://localhost"
+      interval: 15s
+      timeout: 10s
+      retries: 2
+      start_period: 5s
+
+  seq1setlicense:
+    image: datalust/seqcli
+    networks:
+      - seqclusterdemo
+    depends_on:
+      seq1:
+        condition: service_healthy
+      proxy:
+        condition: service_healthy      
+    restart: "no"
+    volumes:
+      - ./cert.txt:/cert.txt
+    entrypoint:
+      - /bin/seqcli/seqcli 
+      - license 
+      - apply 
+      - --certificate=/cert.txt
+      - -s http://proxy:5666
+
+  sampleingestion:
+    image: datalust/seqcli
+    networks:
+      - seqclusterdemo
+    depends_on:
+      seq1:
+        condition: service_healthy
+      proxy:
+        condition: service_healthy      
+    restart: "no"
+    entrypoint:
+      - /bin/seqcli/seqcli 
+      - sample  
+      - ingest
+      - -y
+      - --quiet 
+      - -s http://proxy:5666
+
+  proxy:
+    image: haproxy
+    volumes:
+      - ./haproxy:/usr/local/etc/haproxy:ro
+    networks:
+      - seqclusterdemo
+    depends_on:
+      seq1:
+        condition: service_healthy
+    ports:
+      - "5666:5666"
+      - "8404:8404"
+    healthcheck:
+      test: |
+        bash -c 'exec 3<>/dev/tcp/127.0.0.1/5888; echo -e "GET / HTTP/1.1\nConnection: close\n" >&3; cat <&3 | grep -q "200 OK"'
+      interval: 5s
+      timeout: 4s
+      retries: 3
+
+  pgseq:
+    image: postgres:14
+    hostname: pgseq
+    networks:
+      - seqclusterdemo
+    environment: 
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=seq
+      - POSTGRES_PASSWORD=terminatorx
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres", "-d", "seq"]
+      interval: 5s
+      timeout: 4s
+      retries: 3
+
+  setdiagnostictitle:
+    image: datalust/seqcli
+    networks:
+      - seqclusterdemo
+    restart: "no"
+    entrypoint:
+      - /bin/seqcli/seqcli 
+      - setting  
+      - set
+      - -n
+      - InstanceTitle
+      - -v
+      - Diagnostics
+      - -s 
+      - http://seqdiagnostics
+    depends_on: 
+      seqdiagnostics:
+        condition: service_healthy
+
+  applydiagnostictemplates:
+    image: datalust/seqcli
+    networks:
+      - seqclusterdemo
+    volumes:
+      - ./templates:/templates
+    depends_on:
+      seqdiagnostics:
+        condition: service_healthy
+    restart: "no"
+    entrypoint:
+      - /bin/seqcli/seqcli 
+      - template  
+      - import
+      - --input
+      - /templates
+      - --merge
+      - -s 
+      - http://seqdiagnostics
+
+  enabledetailedtracing:
+    image: curlimages/curl
+    networks:
+      - seqclusterdemo
+    restart: "no"
+    command: [
+      "curl", 
+      "http://proxy:5666/api/users/user-admin",
+      "--retry", "5",
+      "--retry-delay", "30",
+      "-X", "PUT",
+      "-H", "Accept: application/json, text/plain",
+      "-H", "Content-Type: application/json;charset=utf-8",
+      "--data-raw",  "{\"Username\":\"admin\",\"DisplayName\":\"Administrator\",\"EmailAddress\":null,\"Preferences\":{\"DefaultWorkspaceId\":\"workspace-15\",\"BaseTheme\":\"dark-theme\",\"TraceQueries\":true,\"StartOfWeek\":0,\"RangeSelectorOptions\":\"\",\"NoEventPropertyViewFlattening\":false},\"RoleIds\":[\"role-administrator\"],\"Id\":\"user-admin\"}"
+    ]
+    depends_on: 
+      proxy:
+        condition: service_healthy
+      seq1:
+        condition: service_healthy
+      seq2:
+        condition: service_healthy
+
+networks:
+  seqclusterdemo: {}
+  
